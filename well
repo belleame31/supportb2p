@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Boys II Planet 2nd Alpha Support Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0; padding: 0; min-height: 100vh;
+    }
+    
+    .header {
+      text-align: center; padding: 2rem 0; color: white;
+    }
+    .header h1 { margin: 0; font-size: 2.2rem; font-weight: 700; }
+    .header p { margin: 0.5rem 0 0; opacity: 0.9; font-size: 1.1rem; }
+    
+    .container {
+      max-width: 500px; margin: 0 auto; padding: 0 1rem;
+    }
+    
+    .card {
+      background: white; border-radius: 20px; padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 2rem; backdrop-filter: blur(10px);
+    }
+    
+    .card.collapsed {
+      padding: 1rem 2rem;
+    }
+    
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; cursor: pointer;
+    }
+    .card-header h2 { margin: 0; color: #374151; }
+    .card-header.collapsed { margin-bottom: 0; }
+    
+    .toggle-btn {
+      background: white; border: none; padding: 0;
+      border-radius: 50%; cursor: pointer; color: #475569;
+      transition: all 0.2s;
+      width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .toggle-btn:hover { 
+      color: #374151; 
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .card-content {
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      overflow: hidden;
+    }
+    .card-content.collapsed {
+      max-height: 0; opacity: 0;
+    }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { 
+      display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;
+    }
+    
+    .form-row { display: flex; gap: 1rem; }
+    .form-row > * { flex: 1; }
+    
+    select, input[type="date"] {
+      width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb;
+      border-radius: 10px; font-size: 1rem; transition: border-color 0.2s;
+    }
+    select:focus, input[type="date"]:focus {
+      outline: none; border-color: #667eea;
+    }
+    
+    .trainee-list {
+      background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+      padding: 1.5rem; margin: 1rem 0; font-size: 0.9rem; color: #64748b;
+    }
+    .trainee-list strong { color: #374151; }
+    
+    textarea {
+      width: 100%; min-height: 140px; padding: 1rem; border: 2px solid #e5e7eb;
+      border-radius: 10px; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.95rem; resize: vertical; transition: border-color 0.2s;
+    }
+    textarea:focus { outline: none; border-color: #667eea; }
+    
+    .btn {
+      background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+      border: none; padding: 0.75rem 1.5rem; border-radius: 10px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #f1f5f9; color: #475569; margin-right: 0.5rem;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0; box-shadow: 0 4px 15px rgba(71, 85, 105, 0.2);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626); color: white;
+    }
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706); color: white;
+    }
+    .btn-warning:hover {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669); color: white;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-icon {
+      background: #f8fafc; border: 2px solid #e5e7eb; color: #6b7280;
+      padding: 0.5rem; width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-icon:hover {
+      background: #f1f5f9; border-color: #d1d5db; color: #374151;
+    }
+    
+    .preview-section {
+      display: none; margin-top: 1.5rem; padding: 1.5rem;
+      background: #fef7ff; border: 2px solid #e879f9; border-radius: 12px;
+    }
+    .preview-section.show { display: block; }
+    .preview-section h3 { margin-top: 0; color: #a21caf; }
+    
+    .edit-section {
+      display: none; margin-top: 1.5rem; padding: 1.5rem;
+      background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px;
+    }
+    .edit-section.show { display: block; }
+    .edit-section h3 { margin-top: 0; color: #d97706; }
+    
+    .preview-table {
+      width: 100%; border-collapse: collapse; margin-top: 1rem;
+    }
+    .preview-table th, .preview-table td {
+      padding: 0.5rem; text-align: left; border-bottom: 1px solid #f3e8ff;
+    }
+    .preview-table th { background: #faf5ff; font-weight: 600; }
+    
+    .leaderboard-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .leaderboard-header h2 { margin: 0; color: #374151; }
+    
+    .leaderboard-controls {
+      display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+    }
+    
+    .edit-dropdown {
+      position: relative; display: inline-block;
+    }
+    
+    .edit-menu {
+      display: none; position: absolute; right: 0; top: 100%;
+      background: white; border: 2px solid #e5e7eb; border-radius: 8px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15); z-index: 100;
+      min-width: 180px; margin-top: 0.25rem;
+    }
+    .edit-menu.show { display: block; }
+    
+    .edit-menu button {
+      display: block; width: 100%; text-align: left; padding: 0.75rem 1rem;
+      border: none; background: white; cursor: pointer;
+      transition: background-color 0.2s; font-size: 0.9rem;
+    }
+    .edit-menu button:hover { background: #f8fafc; }
+    .edit-menu button:first-child { border-radius: 6px 6px 0 0; }
+    .edit-menu button:last-child { border-radius: 0 0 6px 6px; }
+    
+    /* Style for the import file input */
+    #import-file {
+      display: none;
+    }
+    
+    /* Add visual separator for settings menu */
+    .edit-menu hr {
+      margin: 0.5rem 0;
+      border: none;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .top16-notice {
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      border: 2px solid #3b82f6; border-radius: 12px; padding: 1rem;
+      margin-bottom: 1.5rem; text-align: center;
+    }
+    .top16-notice strong { color: #1d4ed8; }
+    
+    .leaderboard-container {
+      background: #f8fafc; border-radius: 15px; padding: 1.5rem;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    /* ADAPTIVE: Width responds to screen size, always full width on mobile */
+    .leaderboard-item {
+      background: white; 
+      border-radius: 12px; 
+      margin-bottom: 0.5rem;
+      padding: 0.8rem;
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative; 
+      overflow: hidden;
+      width: 100%;           /* Fully responsive width */
+      max-width: 900px;      /* Max width for large screens */
+      margin-left: auto;     /* Center on desktop */
+      margin-right: auto;
+      min-width: 0;
+    }
+    
+    .leaderboard-item:hover {
+      transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    }
+    
+    .leaderboard-item.top16 {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 2px solid #3b82f6; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+    }
+    
+    .rank-badge {
+      min-width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      font-weight: 700; 
+      font-size: 1rem;
+      color: white;
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      flex-shrink: 0;
+    }
+    
+    .rank-badge.top16 {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .trainee-info {
+      flex: 2;
+      min-width: 0;
+    }
+    
+    .trainee-name {
+      font-weight: 700; 
+      font-size: 0.9rem;
+      color: #111827;
+      margin-bottom: 0.4rem; 
+      display: flex; 
+      align-items: center; 
+      gap: 0.4rem;
+      cursor: pointer; 
+      transition: color 0.2s;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    
+    .trainee-name:hover {
+      color: #3b82f6; text-decoration: underline;
+    }
+    
+    .rank-change {
+      font-size: 0.9rem;
+      font-weight: 700; 
+      min-width: 25px;
+      flex-shrink: 0;
+    }
+    
+    .rank-change.up {
+      color: #16a34a;
+    }
+    
+    .rank-change.down {
+      color: #dc2626;
+    }
+    
+    .rank-change.same {
+      color: #64748b;
+    }
+    
+    .progress-container {
+      background: #e5e7eb; 
+      border-radius: 6px; 
+      height: 12px;
+      position: relative; 
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%; border-radius: 6px; transition: width 0.8s ease;
+      background: linear-gradient(90deg, #6b7280, #4b5563);
+    }
+    
+    .progress-bar.top16 {
+      background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    }
+    
+    .percentage {
+      font-weight: 700; 
+      font-size: 1rem;
+      color: #374151;
+      min-width: 50px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    
+    .percentage.top16 { color: #1d4ed8; }
+    
+    .chart-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;
+      padding: 0.5rem; backdrop-filter: blur(8px);
+    }
+    
+    .chart-modal.show { display: flex; }
+    
+    .chart-modal-content {
+      background: #ffffff; border-radius: 24px;
+      max-width: 1300px; width: 95%; max-height: 95vh;
+      box-shadow: 0 30px 100px rgba(0,0,0,0.3), 0 15px 50px rgba(0,0,0,0.2);
+      position: relative; overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+    }
+    
+    .chart-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 2.5rem 3rem; background: linear-gradient(135deg, #f8fafc, #ffffff);
+      border-bottom: 3px solid #e5e7eb;
+      position: relative;
+    }
+    
+    .chart-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(147, 51, 234, 0.05));
+      pointer-events: none;
+    }
+    
+    .chart-header h3 {
+      margin: 0; color: #1f2937; font-size: 2rem; font-weight: 900;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      letter-spacing: -0.025em;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .chart-buttons {
+      display: flex; gap: 1rem; align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .chart-download-btn {
+      background: linear-gradient(135deg, #10b981, #059669); 
+      border: none; padding: 1rem;
+      border-radius: 12px; cursor: pointer; color: white;
+      font-size: 1.2rem; transition: all 0.3s;
+      display: flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px; 
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .chart-download-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .chart-download-btn:hover::before {
+      opacity: 1;
+    }
+    
+    .chart-download-btn:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-4px); 
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    }
+    
+    .chart-close {
+      background: #f1f5f9; border: none; padding: 1rem 1.75rem;
+      border-radius: 12px; cursor: pointer; color: #475569;
+      font-size: 1.1rem; font-weight: 600; transition: all 0.3s;
+      border: 2px solid #e2e8f0;
+    }
+    
+    .chart-close:hover { 
+      background: #e2e8f0; transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(71, 85, 105, 0.3);
+    }
+    
+    .chart-container {
+      position: relative; height: 600px; padding: 3rem;
+      background: linear-gradient(135deg, #ffffff, #f8fafc);
+      border-radius: 0 0 24px 24px;
+    }
+    
+    .empty-state {
+      text-align: center; padding: 3rem; color: #9ca3af;
+    }
+    
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white; padding: 2rem; border-radius: 15px; max-width: 500px;
+      width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .modal h3 { margin-top: 0; color: #374151; }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+    
+    .loading-spinner {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .spinner {
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .dashboard-capture {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .dashboard-title {
+      margin: 0;
+      color: #374151;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    
+    .dashboard-date {
+      color: #6b7280;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    /* Mobile Optimizations - Adaptive width with mobile retention */
+    @media (max-width: 768px) {
+      .container { 
+        padding: 0 0.5rem; 
+        max-width: 100%;
+      }
+      
+      .card { 
+        padding: 1.5rem; 
+        margin-bottom: 1rem; 
+        max-width: 100%;
+      }
+      
+      .header h1 { font-size: 1.8rem; }
+      .form-row { flex-direction: column; }
+      .leaderboard-header { flex-direction: column; align-items: stretch; }
+      .leaderboard-controls { justify-content: center; }
+      
+      .leaderboard-item { 
+        width: 100%;            /* Always 100% width on mobile */
+        max-width: none;        /* No max-width constraint on mobile */
+        padding: 0.6rem;
+        gap: 0.4rem;
+        margin-bottom: 0.4rem;
+        min-width: 0;
+      }
+      
+      .rank-badge { 
+        min-width: 40px;
+        height: 40px; 
+        font-size: 0.9rem;
+      }
+      
+      .trainee-name { 
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+        gap: 0.3rem;
+      }
+      
+      .percentage { 
+        font-size: 0.9rem;
+        min-width: 40px; 
+      }
+      
+      .rank-change { 
+        font-size: 0.8rem;
+        min-width: 20px;
+      }
+      
+      .progress-container {
+        height: 8px;
+      }
+      
+      .leaderboard-container {
+        padding: 1.5rem;
+        max-width: 100%;
+      }
+      
+      .dashboard-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 0.5rem;
+      }
+      
+      .dashboard-title {
+        font-size: 2rem !important;
+        text-align: center !important;
+      }
+      
+      .dashboard-date {
+        font-size: 1.2rem !important;
+        text-align: center !important;
+      }
+      
+      .dashboard-capture {
+        max-width: 100% !important;
+      }
+      
+      .chart-modal {
+        padding: 0.25rem;
+      }
+      
+      .chart-modal-content {
+        width: 98%; 
+        max-height: 96vh;
+        border-radius: 16px;
+      }
+      
+      .chart-header {
+        padding: 1.5rem 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+      
+      .chart-header h3 { 
+        font-size: 1.5rem;
+        margin-bottom: 0;
+      }
+      
+      .chart-buttons {
+        gap: 0.75rem;
+        justify-content: center;
+      }
+      
+      .chart-download-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1rem;
+      }
+      
+      .chart-close {
+        padding: 0.75rem 1.25rem;
+        font-size: 1rem;
+      }
+      
+      .chart-container {
+        height: 550px;
+        padding: 1.5rem 1rem;
+      }
+    }
+    
+    /* Tablet specific optimizations */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .container {
+        max-width: 700px; /* Wider container on tablets */
+      }
+      
+      .leaderboard-item {
+        max-width: 800px; /* Larger max-width for tablets */
+      }
+    }
+    
+    /* Large desktop optimizations */
+    @media (min-width: 1200px) {
+      .container {
+        max-width: 600px; /* Slightly wider container on large screens */
+      }
+      
+      .leaderboard-item {
+        max-width: 1000px; /* Even larger max-width for large screens */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🏆 Boys II Planet Alpha Support</h1>
+    <p>2nd Alpha Support Progress Tracker</p>
+  </div>
+
+  <div class="container">
+    <div class="card collapsed" id="input-card">
+      <div class="card-header collapsed" onclick="toggleInputSection()">
+        <h2 id="add-update-text" style="display: none;">📊 Add New Update</h2>
+        <button type="button" class="toggle-btn" id="input-toggle">
+          ➕
+        </button>
+      </div>
+      
+      <div class="card-content collapsed" id="input-content">
+        <form id="data-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="update-time">Update Time</label>
+              <select id="update-time">
+                <option value="AM">🌅 Morning Update</option>
+                <option value="PM">🌙 Evening Update</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="date">Date</label>
+              <input type="date" id="date">
+            </div>
+          </div>
+          
+          <div class="trainee-list">
+            <strong>📋 Trainee Order (paste percentages in this exact order):</strong><br><br>
+            <span id="trainee-names"></span>
+          </div>
+          
+          <div class="form-group">
+            <label for="raw-data">📊 Paste Percentages (one per line)</label>
+            <textarea id="raw-data" placeholder="1.29%&#10;0.41%&#10;2.42%&#10;2.83%&#10;2.90%&#10;0.66%&#10;1.12%&#10;..."></textarea>
+          </div>
+
+          <div class="preview-section" id="preview-section">
+            <h3>👀 Data Preview</h3>
+            <div id="preview-content"></div>
+            <div style="margin-top: 1rem;">
+              <button type="button" class="btn btn-secondary" onclick="hidePreview()">❌ Cancel</button>
+              <button type="button" class="btn" onclick="confirmData()">✅ Confirm & Add to Leaderboard</button>
+            </div>
+          </div>
+
+          <div class="edit-section" id="edit-section">
+            <h3>✏️ Edit Update</h3>
+            <div id="edit-content"></div>
+            <div style="margin-top: 1rem;">
+              <button type="button" class="btn btn-secondary" onclick="hideEdit()">❌ Cancel</button>
+              <button type="button" class="btn" onclick="saveEdit()">💾 Save Changes</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" style="width: 100%;">🔍 Preview Data</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" id="leaderboard-card">
+      <div class="leaderboard-header">
+        <h2>📈 Alpha Support Leaderboard</h2>
+        <div class="leaderboard-controls">
+          <div class="form-group" style="margin: 0; min-width: 200px;">
+            <label for="view-date">View Update:</label>
+            <select id="view-date"></select>
+          </div>
+          <div class="edit-dropdown">
+            <button type="button" class="btn-icon" onclick="toggleEditMenu()" id="edit-menu-btn" style="display: none;">
+              ⚙️
+            </button>
+            <div class="edit-menu" id="edit-menu">
+              <button onclick="editCurrentUpdate(); hideEditMenu();">✏️ Edit Update</button>
+              <button onclick="deleteCurrentUpdate(); hideEditMenu();" style="color: #dc2626;">🗑️ Delete Update</button>
+              <button onclick="downloadDashboard(); hideEditMenu();" style="color: #10b981;">📷 Download Dashboard</button>
+              <button onclick="downloadCSV(); hideEditMenu();" style="color: #059669;">📊 Download CSV</button>
+              <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #e5e7eb;">
+              <button onclick="exportData(); hideEditMenu();" style="color: #7c3aed;">💾 Export Data</button>
+              <button onclick="document.getElementById('import-file').click(); hideEditMenu();" style="color: #ea580c;">📥 Import Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="top16-notice">
+        <strong>🎁 Top 16 trainees</strong> will receive the <strong>life4cuts Special Frame</strong> reward!<br>
+        <small style="opacity: 0.8;">💡 Click on trainee names to view their progress chart</small>
+      </div>
+      
+      <div id="leaderboard-table"></div>
+    </div>
+  </div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+
+  <div class="chart-modal" id="chart-modal">
+    <div class="chart-modal-content">
+      <div class="chart-header">
+        <h3 id="chart-title">ARCTIC</h3>
+        <div class="chart-buttons">
+          <button class="chart-download-btn" onclick="downloadChartImage()" title="Download Chart as PNG">⬇</button>
+          <button class="chart-close" onclick="hideChart()">✕ Close</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="progress-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="modal">
+    <div class="modal-content">
+      <h3>⚠️ Confirm Delete</h3>
+      <p>Are you sure you want to delete this update? This action cannot be undone.</p>
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="hideDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p style="margin: 0; color: #374151; font-weight: 600;">📸 Capturing Dashboard...</p>
+    </div>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    const traineeNames = [
+      "ARCTIC", "CHEN BO WEN", "CHEN KAI WEN", "CHUEI LI YU", "CHUNG SANG HYEON", "DANG HONG HAI", "FAN ZHE YI", "HAN HARRY JUNE", "HE XIN LONG", "HE ZHONG XING",
+      "HSU CHING YU", "HU HAN WEN", "JANG HAN EUM", "JO GYE HYEON", "JUN LEE JEONG", "JUNG HYUN JUN", "KANG WOO JIN", "KIM DONG YUN", "KIM GEON WOO", "KIM IN HU",
+      "KIM JAE HYUN", "KIM JUN MIN", "KIM JUN SEO", "KIM SI HWAN", "KIM TAE JO", "LEE LEO", "LEE SANG WON", "LI ZI HAO", "MASATO", "NA YUN SEO",
+      "NIAN BO HENG", "PARK DONG GYU", "PARK JUN IL", "PENG JIN YU", "SEN", "SEO WON", "SUN HENG YU", "SUN JIA YANG", "TATSUKI", "XUE SU REN",
+      "YEOM YE CHAN", "YI CHEN", "YOO KANG MIN", "YOON MIN", "YUMEKI", "ZHANG JIA HAO", "ZHAO GUANG XU", "ZHOU AN XIN"
+    ];
+
+    let currentPreviewData = null;
+    let currentEditIndex = null;
+    let inputSectionCollapsed = true;
+    let progressChart = null;
+
+    document.getElementById('trainee-names').innerHTML = 
+      traineeNames.map((name, i) => `<span style="display:inline-block;margin:2px 8px 2px 0;padding:2px 6px;background:#e0e7ff;border-radius:4px;font-size:0.85em;">${i+1}. ${name}</span>`).join('');
+
+    let updates = JSON.parse(localStorage.getItem('alphaSupportUpdates2')) || [];
+
+    function saveUpdates() {
+      localStorage.setItem('alphaSupportUpdates2', JSON.stringify(updates));
+    }
+
+    // Export all data to a JSON file
+    function exportData() {
+      try {
+        const exportData = {
+          version: "1.0",
+          exported: new Date().toISOString(),
+          totalUpdates: updates.length,
+          updates: updates
+        };
+        
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        const today = new Date().toISOString().split('T')[0];
+        link.download = `Boys_II_Planet_Alpha_Support_Data_${today}.json`;
+        link.href = url;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        alert(`✅ Data exported successfully!\n📊 ${updates.length} updates exported\n📁 File: Boys_II_Planet_Alpha_Support_Data_${today}.json`);
+        
+      } catch (error) {
+        console.error('Export error:', error);
+        alert('❌ Failed to export data. Please try again.');
+      }
+    }
+
+    // Import data from a JSON file
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.type !== 'application/json') {
+        alert('❌ Please select a valid JSON file.');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          
+          // Validate imported data structure
+          if (!importedData.updates || !Array.isArray(importedData.updates)) {
+            throw new Error('Invalid data format');
+          }
+          
+          // Validate each update has required fields
+          const validUpdates = importedData.updates.filter(update => {
+            return update.date && update.time && update.data && Array.isArray(update.data);
+          });
+          
+          if (validUpdates.length === 0) {
+            throw new Error('No valid updates found in file');
+          }
+          
+          // Ask user if they want to merge or replace
+          const shouldMerge = confirm(
+            `📊 Import Data?\n\n` +
+            `📁 File contains: ${validUpdates.length} updates\n` +
+            `💾 Current data: ${updates.length} updates\n\n` +
+            `✅ Click OK to MERGE with existing data\n` +
+            `❌ Click Cancel to REPLACE all existing data`
+          );
+          
+          if (shouldMerge) {
+            // Merge: Add new updates, avoid duplicates
+            let addedCount = 0;
+            validUpdates.forEach(newUpdate => {
+              const exists = updates.some(existing => 
+                existing.date === newUpdate.date && existing.time === newUpdate.time
+              );
+              
+              if (!exists) {
+                updates.push(newUpdate);
+                addedCount++;
+              }
+            });
+            
+            if (addedCount > 0) {
+              saveUpdates();
+              updateDateOptions();
+              renderLeaderboard();
+              alert(`✅ Data merged successfully!\n📊 ${addedCount} new updates added\n💾 Total updates: ${updates.length}`);
+            } else {
+              alert('ℹ️ No new updates to add. All data already exists.');
+            }
+          } else {
+            // Replace: Clear existing and use imported data
+            updates = validUpdates;
+            saveUpdates();
+            updateDateOptions();
+            renderLeaderboard();
+            alert(`✅ Data replaced successfully!\n📊 ${validUpdates.length} updates imported\n🔄 All previous data has been replaced`);
+          }
+          
+        } catch (error) {
+          console.error('Import error:', error);
+          alert(`❌ Import failed!\n\n${error.message}\n\nPlease check that you're importing a valid Boys II Planet data file.`);
+        }
+        
+        // Clear file input
+        event.target.value = '';
+      };
+      
+      reader.onerror = function() {
+        alert('❌ Failed to read file. Please try again.');
+      };
+      
+      reader.readAsText(file);
+    }
+
+    // Backup reminder function (optional)
+    function showBackupReminder() {
+      if (updates.length > 0 && localStorage.getItem('lastBackupReminder')) {
+        const daysSinceLastReminder = 7; // Show reminder every 7 days
+        const lastReminder = localStorage.getItem('lastBackupReminder');
+        
+        if (!lastReminder || Date.now() - parseInt(lastReminder) > daysSinceLastReminder * 24 * 60 * 60 * 1000) {
+          setTimeout(() => {
+            if (confirm('💾 Backup Reminder\n\nYou have progress data that could be lost if you clear your browser or switch devices.\n\nWould you like to export a backup now?')) {
+              exportData();
+            }
+            localStorage.setItem('lastBackupReminder', Date.now().toString());
+          }, 2000);
+        }
+      }
+    }
+
+    function getDateTimeKey(date, time) {
+      const dateTime = new Date(date);
+      if (time === 'PM') {
+        dateTime.setHours(23, 59, 59, 999);
+      } else {
+        dateTime.setHours(0, 0, 0, 0);
+      }
+      return dateTime.getTime();
+    }
+
+    function getSortedUpdates() {
+      return [...updates].sort((a, b) => {
+        const aKey = getDateTimeKey(a.date, a.time);
+        const bKey = getDateTimeKey(b.date, b.time);
+        return aKey - bKey;
+      });
+    }
+
+    function findCurrentUpdateIndex(currentDate, currentTime) {
+      const sortedUpdates = getSortedUpdates();
+      return sortedUpdates.findIndex(update => 
+        update.date === currentDate && update.time === currentTime
+      );
+    }
+
+    function getPreviousUpdate(currentDate, currentTime) {
+      const sortedUpdates = getSortedUpdates();
+      const currentIndex = findCurrentUpdateIndex(currentDate, currentTime);
+      
+      if (currentIndex <= 0) return null;
+      return sortedUpdates[currentIndex - 1];
+    }
+
+    function isMobile() {
+      return window.innerWidth <= 768;
+    }
+
+    function downloadCSV() {
+      if (!updates || updates.length === 0) {
+        alert('⚠️ No data available for CSV export.');
+        return;
+      }
+      
+      let csvContent = 'Name,Date,Time,Percentage\n';
+      
+      updates.forEach(update => {
+        if (update.data && Array.isArray(update.data)) {
+          update.data.forEach(trainee => {
+            if (trainee && trainee.name && typeof trainee.percent === 'number') {
+              csvContent += `"${trainee.name}","${update.date}","${update.time}",${trainee.percent}\n`;
+            }
+          });
+        }
+      });
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'boys_ii_planet_support_data.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      alert('✅ CSV file downloaded successfully!');
+    }
+
+    function downloadChartImage() {
+      if (!progressChart) return;
+      
+      const chartWidth = progressChart.canvas.width;
+      const chartHeight = progressChart.canvas.height;
+      const headerHeight = 100;
+      
+      const canvasWidth = chartWidth;
+      const canvasHeight = chartHeight + headerHeight;
+      const cornerRadius = 24;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      const ctx = canvas.getContext('2d');
+      
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+      
+      roundRect(ctx, 0, 0, canvasWidth, canvasHeight, cornerRadius);
+      ctx.clip();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      
+      const gradient = ctx.createLinearGradient(0, 0, 0, headerHeight);
+      gradient.addColorStop(0, '#f8fafc');
+      gradient.addColorStop(1, '#ffffff');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvasWidth, headerHeight);
+      
+      ctx.fillStyle = '#1f2937';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      const traineeName = document.getElementById('chart-title').textContent || 'Chart';
+      ctx.fillText(traineeName, canvasWidth / 2, 70);
+      
+      ctx.font = '24px Arial';
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText('Progress Chart', canvasWidth / 2, 95);
+      
+      ctx.drawImage(progressChart.canvas, 0, headerHeight);
+      
+      ctx.strokeStyle = 'rgba(229, 231, 235, 0.5)';
+      ctx.lineWidth = 2;
+      roundRect(ctx, 1, 1, canvasWidth - 2, canvasHeight - 2, cornerRadius - 1);
+      ctx.stroke();
+      
+      canvas.toBlob(function(blob) {
+        const link = document.createElement('a');
+        const filename = traineeName.replace(/\s+/g, '_') + '_progress_chart.png';
+        link.download = filename;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }, 'image/png', 1.0);
+    }
+
+    function downloadDashboard() {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      loadingOverlay.style.display = 'flex';
+      
+      const selectedIndex = parseInt(document.getElementById('view-date').value);
+      const currentUpdate = updates[selectedIndex];
+      
+      if (!currentUpdate) {
+        loadingOverlay.style.display = 'none';
+        alert('❌ No data selected for dashboard export.');
+        return;
+      }
+
+      const dateObj = new Date(currentUpdate.date);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+
+      const dashboardElement = document.createElement('div');
+      dashboardElement.className = 'dashboard-capture';
+      dashboardElement.style.position = 'fixed';
+      dashboardElement.style.top = '-9999px';
+      dashboardElement.style.left = '-9999px';
+      dashboardElement.style.width = '900px';
+      
+      let sorted = currentUpdate.data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+      let maxPercent = Math.max(...sorted.map(t => t.percent));
+      
+      let dashboardHTML = `
+        <div class="dashboard-header">
+          <h2 class="dashboard-title"> Alpha Support Leaderboard</h2>
+          <div class="dashboard-date">${formattedDate} ${currentUpdate.time}</div>
+        </div>
+        <div class="top16-notice" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px solid #3b82f6; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: center;">
+          <strong style="color: #1d4ed8;">🎁 Top 16 trainees</strong> will receive the <strong>life4cuts Special Frame</strong> reward!
+        </div>
+        <div class="leaderboard-container" style="background: #f8fafc; border-radius: 15px; padding: 1.5rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);">
+      `;
+      
+      sorted.forEach((trainee, index) => {
+        let rank = index + 1;
+        let isTop16 = rank <= 16;
+        let progressWidth = maxPercent > 0 ? (trainee.percent / maxPercent) * 100 : 0;
+        
+        let rankChange = getRankChange(trainee.name, currentUpdate.date, currentUpdate.time);
+        let rankChangeHtml = '';
+        if (rankChange.text) {
+          let changeColor = rankChange.type === 'up' ? '#16a34a' : rankChange.type === 'down' ? '#dc2626' : '#64748b';
+          rankChangeHtml = `<span style="color: ${changeColor}; font-size: 0.9rem; font-weight: 700; min-width: 25px;">${rankChange.text}</span>`;
+        }
+        
+        dashboardHTML += `
+          <div style="background: ${isTop16 ? 'linear-gradient(135deg, #eff6ff, #dbeafe)' : 'white'}; border: ${isTop16 ? '2px solid #3b82f6' : 'none'}; border-radius: 12px; margin-bottom: 0.5rem; padding: 0.8rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
+            <div style="min-width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; color: white; background: ${isTop16 ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'linear-gradient(135deg, #6b7280, #4b5563)'}; ${isTop16 ? 'box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);' : ''} flex-shrink: 0;">${rank}</div>
+            <div style="flex: 2; min-width: 0;">
+              <div style="font-weight: 700; font-size: 0.9rem; color: #111827; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; white-space: normal; overflow: visible; text-overflow: clip;">
+                ${trainee.name}
+                ${rankChangeHtml}
+              </div>
+              <div style="background: #e5e7eb; border-radius: 6px; height: 12px; position: relative; overflow: hidden;">
+                <div style="height: 100%; border-radius: 6px; width: ${progressWidth}%; background: ${isTop16 ? 'linear-gradient(90deg, #3b82f6, #1d4ed8)' : 'linear-gradient(90deg, #6b7280, #4b5563)'};"></div>
+              </div>
+            </div>
+            <div style="font-weight: 700; font-size: 1rem; color: ${isTop16 ? '#1d4ed8' : '#374151'}; min-width: 50px; text-align: right; flex-shrink: 0;">${trainee.percent.toFixed(2)}%</div>
+          </div>
+        `;
+      });
+      
+      dashboardHTML += '</div>';
+      dashboardElement.innerHTML = dashboardHTML;
+      
+      document.body.appendChild(dashboardElement);
+      
+      if (typeof html2canvas === 'undefined') {
+        document.body.removeChild(dashboardElement);
+        loadingOverlay.style.display = 'none';
+        alert('❌ Error: Screenshot library not loaded. Please refresh the page and try again.');
+        return;
+      }
+
+      const options = {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        width: 900,
+        height: dashboardElement.scrollHeight
+      };
+
+      html2canvas(dashboardElement, options)
+        .then(canvas => {
+          const link = document.createElement('a');
+          const dateStr = currentUpdate.date.replace(/-/g, '');
+          const timeStr = currentUpdate.time;
+          
+          link.download = `Boys_II_Planet_Dashboard_${dateStr}_${timeStr}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          document.body.removeChild(dashboardElement);
+          loadingOverlay.style.display = 'none';
+        })
+        .catch(error => {
+          console.error('Dashboard screenshot error:', error);
+          document.body.removeChild(dashboardElement);
+          loadingOverlay.style.display = 'none';
+          alert('❌ Failed to capture dashboard screenshot. Please try again.');
+        });
+    }
+
+    function toggleInputSection() {
+      const content = document.getElementById('input-content');
+      const toggle = document.getElementById('input-toggle');
+      const header = document.querySelector('#input-card .card-header');
+      const card = document.getElementById('input-card');
+      const titleText = document.getElementById('add-update-text');
+      
+      inputSectionCollapsed = !inputSectionCollapsed;
+      
+      if (inputSectionCollapsed) {
+        content.classList.add('collapsed');
+        header.classList.add('collapsed');
+        card.classList.add('collapsed');
+        toggle.textContent = '➕';
+        titleText.style.display = 'none';
+      } else {
+        content.classList.remove('collapsed');
+        header.classList.remove('collapsed');
+        card.classList.remove('collapsed');
+        toggle.textContent = '➖';
+        titleText.style.display = 'block';
+      }
+    }
+
+    function toggleEditMenu() {
+      const menu = document.getElementById('edit-menu');
+      menu.classList.toggle('show');
+    }
+
+    function hideEditMenu() {
+      document.getElementById('edit-menu').classList.remove('show');
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.edit-dropdown')) {
+        hideEditMenu();
+      }
+    });
+
+    document.getElementById('chart-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        hideChart();
+      }
+    });
+
+    function updateDateOptions() {
+      const select = document.getElementById('view-date');
+      const editBtn = document.getElementById('edit-menu-btn');
+      
+      select.innerHTML = '';
+      if(updates.length === 0) {
+        select.innerHTML = '<option>No data available</option>';
+        editBtn.style.display = 'none';
+        return;
+      }
+      
+      const sortedUpdates = getSortedUpdates();
+      
+      updates.forEach((upd, idx) => {
+        let label = `${upd.date} ${upd.time}`;
+        let option = document.createElement('option');
+        option.value = idx;
+        option.textContent = label;
+        select.appendChild(option);
+      });
+      
+      if (sortedUpdates.length > 0) {
+        const mostRecentUpdate = sortedUpdates[sortedUpdates.length - 1];
+        const mostRecentIndex = updates.findIndex(update => 
+          update.date === mostRecentUpdate.date && 
+          update.time === mostRecentUpdate.time
+        );
+        select.value = mostRecentIndex;
+      } else {
+        select.value = updates.length - 1;
+      }
+      
+      editBtn.style.display = 'flex';
+    }
+
+    function parsePercentages(raw) {
+      let lines = raw.trim().split('\n');
+      let arr = [];
+      for(let i = 0; i < lines.length && i < traineeNames.length; i++) {
+        let percentStr = lines[i].trim().replace('%', '');
+        let percent = parseFloat(percentStr);
+        if(!isNaN(percent)) {
+          arr.push({ name: traineeNames[i], percent: percent });
+        }
+      }
+      return arr;
+    }
+
+    function getRankChange(traineeName, currentDate, currentTime) {
+      const prevUpdate = getPreviousUpdate(currentDate, currentTime);
+      
+      if (!prevUpdate || !prevUpdate.data) {
+        return { type: '', text: '' };
+      }
+
+      const currentUpdate = updates.find(u => u.date === currentDate && u.time === currentTime);
+      if (!currentUpdate || !currentUpdate.data) {
+        return { type: '', text: '' };
+      }
+
+      const currentSorted = currentUpdate.data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+      const prevSorted = prevUpdate.data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+
+      const currentRank = currentSorted.findIndex(t => t.name === traineeName) + 1;
+      const prevRank = prevSorted.findIndex(t => t.name === traineeName) + 1;
+
+      if (prevRank === 0) {
+        return { type: '', text: '' };
+      }
+
+      const change = prevRank - currentRank;
+      if (change > 0) {
+        return { type: 'up', text: '+' + change };
+      } else if (change < 0) {
+        return { type: 'down', text: '' + change };
+      } else {
+        return { type: 'same', text: '=' };
+      }
+    }
+
+    function showTraineeChart(traineeName) {
+      const chartData = getTraineeProgressData(traineeName);
+      
+      if (chartData.labels.length === 0) {
+        alert(`❌ No data found for "${traineeName}".`);
+        return;
+      }
+      
+      if (chartData.labels.length < 2) {
+        alert(`⚠️ Only ${chartData.labels.length} data point found for "${traineeName}". Need at least 2 updates to show progress chart.`);
+        return;
+      }
+
+      document.getElementById('chart-title').textContent = traineeName;
+      document.getElementById('chart-modal').classList.add('show');
+      
+      if (progressChart) {
+        progressChart.destroy();
+      }
+      
+      const ctx = document.getElementById('progress-chart').getContext('2d');
+      
+      const mobile = isMobile();
+      const settings = {
+        borderWidth: mobile ? 4 : 5,
+        pointRadius: mobile ? 7 : 9,
+        pointHoverRadius: mobile ? 9 : 12,
+        pointBorderWidth: mobile ? 3 : 4,
+        fontSize: mobile ? 11 : 13,
+        tooltipFontSize: mobile ? 14 : 18,
+        tooltipBodySize: mobile ? 12 : 15,
+        tickFontSize: mobile ? 11 : 14,
+        paddingTop: mobile ? 40 : 60,
+        paddingSides: mobile ? 20 : 40,
+        paddingBottom: mobile ? 30 : 40,
+        offset: mobile ? 12 : 15
+      };
+      
+      progressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            label: 'Rank',
+            data: chartData.ranks,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            borderWidth: settings.borderWidth,
+            pointRadius: settings.pointRadius,
+            pointHoverRadius: settings.pointHoverRadius,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: settings.pointBorderWidth,
+            tension: 0.4,
+            fill: true,
+            datalabels: {
+              labels: {
+                rank: {
+                  display: true,
+                  borderRadius: 50,
+                  backgroundColor: '#3b82f6',
+                  color: '#ffffff',
+                  font: {
+                    size: settings.fontSize,
+                    weight: 'bold'
+                  },
+                  align: 'center',
+                  anchor: 'center',
+                  formatter: function(value, context) {
+                    return value;
+                  }
+                },
+                percentage: {
+                  display: true,
+                  backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                  borderColor: '#3b82f6',
+                  borderRadius: mobile ? 6 : 8,
+                  borderWidth: 2,
+                  color: '#1f2937',
+                  font: {
+                    size: settings.fontSize,
+                    weight: 'bold'
+                  },
+                  align: 'top',
+                  anchor: 'end',
+                  offset: settings.offset,
+                  clamp: true,
+                  padding: {
+                    top: mobile ? 4 : 6,
+                    bottom: mobile ? 4 : 6,
+                    left: mobile ? 6 : 8,
+                    right: mobile ? 6 : 8
+                  },
+                  formatter: function(value, context) {
+                    return chartData.percentages[context.dataIndex].toFixed(2) + '%';
+                  }
+                }
+              }
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: settings.paddingTop,
+              bottom: settings.paddingBottom,
+              left: settings.paddingSides,
+              right: settings.paddingSides
+            }
+          },
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            tooltip: {
+              enabled: true,
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              titleColor: '#1f2937',
+              bodyColor: '#374151',
+              titleFont: { weight: 'bold', size: settings.tooltipFontSize },
+              bodyFont: { size: settings.tooltipBodySize },
+              borderColor: '#3b82f6',
+              borderWidth: mobile ? 2 : 3,
+              cornerRadius: mobile ? 8 : 12,
+              padding: mobile ? 12 : 18,
+              displayColors: false,
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                title: function(context) {
+                  return chartData.labels[context[0].dataIndex];
+                },
+                label: function(context) {
+                  return `Rank: ${context.parsed.y} (${chartData.percentages[context.dataIndex].toFixed(2)}%)`;
+                }
+              }
+            },
+            legend: {
+              display: false
+            },
+            datalabels: {
+              display: true
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: false
+              },
+              grid: {
+                color: 'rgba(229, 231, 235, 0.6)',
+                lineWidth: mobile ? 1 : 2,
+                drawOnChartArea: true,
+              },
+              ticks: {
+                maxRotation: mobile ? 45 : 45,
+                minRotation: 0,
+                color: '#6b7280',
+                font: {
+                  size: settings.tickFontSize,
+                  weight: '500'
+                },
+                padding: mobile ? 10 : 15
+              }
+            },
+            y: {
+              display: true,
+              position: 'left',
+              reverse: true,
+              title: {
+                display: false
+              },
+              min: 1,
+              max: 48,
+              ticks: {
+                stepSize: 12,
+                color: '#6b7280',
+                font: {
+                  size: settings.tickFontSize,
+                  weight: '500'
+                },
+                padding: mobile ? 10 : 15,
+                callback: function(value) {
+                  return value;
+                }
+              },
+              grid: {
+                color: 'rgba(229, 231, 235, 0.6)',
+                lineWidth: mobile ? 1 : 2,
+                drawOnChartArea: true,
+              }
+            }
+          },
+          elements: {
+            point: {
+              hoverBorderWidth: mobile ? 4 : 5
+            }
+          }
+        }
+      });
+    }
+
+    function getTraineeProgressData(traineeName) {
+      const sortedUpdates = getSortedUpdates();
+      const labels = [];
+      const ranks = [];
+      const percentages = [];
+      
+      sortedUpdates.forEach((update, index) => {
+        if (!update.data || !Array.isArray(update.data)) {
+          return;
+        }
+        
+        const traineeData = update.data.find(t => t.name === traineeName);
+        if (!traineeData) {
+          return;
+        }
+        
+        const sortedData = update.data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+        const rank = sortedData.findIndex(t => t.name === traineeName) + 1;
+        
+        const dateObj = new Date(update.date);
+        const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
+        const label = `${formattedDate} ${update.time}`;
+        
+        labels.push(label);
+        ranks.push(rank);
+        percentages.push(traineeData.percent);
+      });
+      
+      return { labels, ranks, percentages };
+    }
+
+    function hideChart() {
+      document.getElementById('chart-modal').classList.remove('show');
+      if (progressChart) {
+        progressChart.destroy();
+        progressChart = null;
+      }
+    }
+
+    function showPreview(data) {
+      let html = '<table class="preview-table"><thead><tr><th>Rank</th><th>Name</th><th>Percentage</th></tr></thead><tbody>';
+      let sorted = data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+      sorted.forEach((item, idx) => {
+        html += `<tr><td>${idx + 1}</td><td>${item.name}</td><td>${item.percent.toFixed(2)}%</td></tr>`;
+      });
+      html += '</tbody></table>';
+      
+      document.getElementById('preview-content').innerHTML = html;
+      document.getElementById('preview-section').classList.add('show');
+    }
+
+    function hidePreview() {
+      document.getElementById('preview-section').classList.remove('show');
+      currentPreviewData = null;
+    }
+
+    function confirmData() {
+      if (!currentPreviewData) return;
+      
+      let date = document.getElementById('date').value;
+      let time = document.getElementById('update-time').value;
+      
+      updates.push({
+        date: date,
+        time: time,
+        data: currentPreviewData
+      });
+      
+      saveUpdates();
+      updateDateOptions();
+      renderLeaderboard();
+      hidePreview();
+      
+      document.getElementById('raw-data').value = '';
+      document.getElementById('date').value = '';
+      
+      alert('✅ Data added successfully!');
+    }
+
+    function showEdit(data, updateIndex) {
+      let html = '<table class="preview-table"><thead><tr><th>Rank</th><th>Name</th><th>Edit %</th></tr></thead><tbody>';
+      let sorted = data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+      sorted.forEach((item, idx) => {
+        html += `<tr><td>${idx + 1}</td><td>${item.name}</td><td><input type="number" step="0.01" value="${item.percent}" id="edit-${item.name.replace(/\s+/g, '_')}" style="width:80px;padding:4px;border:1px solid #ddd;border-radius:4px;"></td></tr>`;
+      });
+      html += '</tbody></table>';
+      
+      document.getElementById('edit-content').innerHTML = html;
+      document.getElementById('edit-section').classList.add('show');
+      currentEditIndex = updateIndex;
+    }
+
+    function hideEdit() {
+      document.getElementById('edit-section').classList.remove('show');
+      currentEditIndex = null;
+    }
+
+    function saveEdit() {
+      if (currentEditIndex === null) return;
+      
+      let update = updates[currentEditIndex];
+      update.data.forEach(trainee => {
+        let input = document.getElementById(`edit-${trainee.name.replace(/\s+/g, '_')}`);
+        if (input) {
+          trainee.percent = parseFloat(input.value) || 0;
+        }
+      });
+      
+      saveUpdates();
+      renderLeaderboard();
+      hideEdit();
+      alert('✅ Update saved successfully!');
+    }
+
+    function editCurrentUpdate() {
+      let selectedIndex = parseInt(document.getElementById('view-date').value);
+      if (selectedIndex >= 0 && selectedIndex < updates.length) {
+        showEdit(updates[selectedIndex].data, selectedIndex);
+      }
+    }
+
+    let deleteIndex = null;
+
+    function deleteCurrentUpdate() {
+      deleteIndex = parseInt(document.getElementById('view-date').value);
+      if (deleteIndex >= 0 && deleteIndex < updates.length) {
+        document.getElementById('delete-modal').classList.add('show');
+      }
+    }
+
+    function hideDeleteModal() {
+      document.getElementById('delete-modal').classList.remove('show');
+      deleteIndex = null;
+    }
+
+    function confirmDelete() {
+      if (deleteIndex !== null && deleteIndex >= 0 && deleteIndex < updates.length) {
+        updates.splice(deleteIndex, 1);
+        saveUpdates();
+        updateDateOptions();
+        renderLeaderboard();
+        hideDeleteModal();
+        alert('✅ Update deleted successfully!');
+      }
+    }
+
+    function renderLeaderboard() {
+      let container = document.getElementById('leaderboard-table');
+      let selectedIndex = parseInt(document.getElementById('view-date').value);
+      
+      if (selectedIndex < 0 || selectedIndex >= updates.length) {
+        container.innerHTML = '<div class="empty-state">📭 No data available. Add your first update to get started!</div>';
+        return;
+      }
+      
+      let update = updates[selectedIndex];
+      let sorted = update.data.slice().sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name));
+      
+      let maxPercent = Math.max(...sorted.map(t => t.percent));
+      
+      let html = '<div class="leaderboard-container">';
+      
+      sorted.forEach((trainee, index) => {
+        let rank = index + 1;
+        let isTop16 = rank <= 16;
+        let progressWidth = maxPercent > 0 ? (trainee.percent / maxPercent) * 100 : 0;
+        
+        let rankChange = getRankChange(trainee.name, update.date, update.time);
+        
+        let rankChangeHtml = '';
+        if (rankChange.text) {
+          rankChangeHtml = `<span class="rank-change ${rankChange.type}">${rankChange.text}</span>`;
+        }
+        
+        html += `
+          <div class="leaderboard-item ${isTop16 ? 'top16' : ''}">
+            <div class="rank-badge ${isTop16 ? 'top16' : ''}">${rank}</div>
+            <div class="trainee-info">
+              <div class="trainee-name" onclick="showTraineeChart('${trainee.name}')">
+                ${trainee.name}
+                ${rankChangeHtml}
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar ${isTop16 ? 'top16' : ''}" style="width: ${progressWidth}%"></div>
+              </div>
+            </div>
+            <div class="percentage ${isTop16 ? 'top16' : ''}">${trainee.percent.toFixed(2)}%</div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    document.getElementById('data-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      let rawData = document.getElementById('raw-data').value;
+      let date = document.getElementById('date').value;
+      
+      if (!rawData.trim() || !date) {
+        alert('⚠️ Please fill in all fields before previewing.');
+        return;
+      }
+      
+      let parsedData = parsePercentages(rawData);
+      
+      if (parsedData.length === 0) {
+        alert('⚠️ Could not parse any valid percentage data. Please check your input format.');
+        return;
+      }
+      
+      currentPreviewData = parsedData;
+      showPreview(parsedData);
+    });
+
+    document.getElementById('view-date').addEventListener('change', renderLeaderboard);
+
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Initialize and show backup reminder
+    updateDateOptions();
+    renderLeaderboard();
+    showBackupReminder();
+  </script>
+</body>
+</html>
