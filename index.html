@@ -1120,7 +1120,7 @@
       
       let dashboardHTML = `
         <div class="dashboard-header">
-          <h2 class="dashboard-title"> Alpha Support Leaderboard</h2>
+          <h2 class="dashboard-title">📈 Alpha Support Leaderboard</h2>
           <div class="dashboard-date">${formattedDate} ${currentUpdate.time}</div>
         </div>
         <div class="top16-notice" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px solid #3b82f6; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: center;">
@@ -1362,7 +1362,7 @@
         tickFontSize: mobile ? 11 : 14,
         paddingTop: mobile ? 40 : 60,
         paddingSides: mobile ? 20 : 40,
-        paddingBottom: mobile ? 30 : 40,
+        paddingBottom: mobile ? 50 : 60, // Increased to accommodate multiline labels
         offset: mobile ? 12 : 15
       };
       
@@ -1397,7 +1397,7 @@
                   align: 'center',
                   anchor: 'center',
                   formatter: function(value, context) {
-                    return value;
+                    return value.toString().padStart(2, '0');
                   }
                 },
                 percentage: {
@@ -1461,7 +1461,7 @@
               intersect: false,
               callbacks: {
                 title: function(context) {
-                  return chartData.labels[context[0].dataIndex];
+                  return chartData.labels[context[0].dataIndex].replace('\n', ' ');
                 },
                 label: function(context) {
                   return `Rank: ${context.parsed.y} (${chartData.percentages[context.dataIndex].toFixed(2)}%)`;
@@ -1487,14 +1487,19 @@
                 drawOnChartArea: true,
               },
               ticks: {
-                maxRotation: mobile ? 45 : 45,
+                maxRotation: mobile ? 0 : 0, // Prevent rotation for better readability
                 minRotation: 0,
                 color: '#6b7280',
                 font: {
                   size: settings.tickFontSize,
                   weight: '500'
                 },
-                padding: mobile ? 10 : 15
+                padding: mobile ? 15 : 20, // Increased padding for multiline labels
+                maxTicksLimit: mobile ? 8 : 12, // Limit ticks to prevent overcrowding
+                autoSkip: true,
+                callback: function(value, index, values) {
+                  return chartData.labels[index].split('\n'); // Enable multiline labels
+                }
               }
             },
             y: {
@@ -1554,8 +1559,8 @@
         const rank = sortedData.findIndex(t => t.name === traineeName) + 1;
         
         const dateObj = new Date(update.date);
-        const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
-        const label = `${formattedDate} ${update.time}`;
+        const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}.${dateObj.getDate().toString().padStart(2, '0')}`;
+        const label = `${formattedDate}\n${update.time}`; // Add line break between date and AM/PM
         
         labels.push(label);
         ranks.push(rank);
