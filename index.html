@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Boys II Planet 2nd Alpha Support Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
@@ -197,12 +197,10 @@
     .edit-menu button:first-child { border-radius: 6px 6px 0 0; }
     .edit-menu button:last-child { border-radius: 0 0 6px 6px; }
     
-    /* Style for the import file input */
     #import-file {
       display: none;
     }
     
-    /* Add visual separator for settings menu */
     .edit-menu hr {
       margin: 0.5rem 0;
       border: none;
@@ -221,7 +219,6 @@
       box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
     }
     
-    /* ADAPTIVE: Width responds to screen size, always full width on mobile */
     .leaderboard-item {
       background: white; 
       border-radius: 12px; 
@@ -234,9 +231,9 @@
       transition: transform 0.2s, box-shadow 0.2s;
       position: relative; 
       overflow: hidden;
-      width: 100%;           /* Fully responsive width */
-      max-width: 900px;      /* Max width for large screens */
-      margin-left: auto;     /* Center on desktop */
+      width: 100%;
+      max-width: 900px;
+      margin-left: auto;
       margin-right: auto;
       min-width: 0;
     }
@@ -513,7 +510,6 @@
       font-weight: 600;
     }
     
-    /* Mobile Optimizations - Adaptive width with mobile retention */
     @media (max-width: 768px) {
       .container { 
         padding: 0 0.5rem; 
@@ -532,8 +528,8 @@
       .leaderboard-controls { justify-content: center; }
       
       .leaderboard-item { 
-        width: 100%;            /* Always 100% width on mobile */
-        max-width: none;        /* No max-width constraint on mobile */
+        width: 100%;
+        max-width: none;
         padding: 0.6rem;
         gap: 0.4rem;
         margin-bottom: 0.4rem;
@@ -637,25 +633,23 @@
       }
     }
     
-    /* Tablet specific optimizations */
     @media (min-width: 769px) and (max-width: 1024px) {
       .container {
-        max-width: 700px; /* Wider container on tablets */
+        max-width: 700px;
       }
       
       .leaderboard-item {
-        max-width: 800px; /* Larger max-width for tablets */
+        max-width: 800px;
       }
     }
     
-    /* Large desktop optimizations */
     @media (min-width: 1200px) {
       .container {
-        max-width: 600px; /* Slightly wider container on large screens */
+        max-width: 600px;
       }
       
       .leaderboard-item {
-        max-width: 1000px; /* Even larger max-width for large screens */
+        max-width: 1000px;
       }
     }
   </style>
@@ -758,7 +752,6 @@
     </div>
   </div>
 
-  <!-- Hidden file input for import -->
   <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
 
   <div class="chart-modal" id="chart-modal">
@@ -819,7 +812,6 @@
       localStorage.setItem('alphaSupportUpdates2', JSON.stringify(updates));
     }
 
-    // Export all data to a JSON file
     function exportData() {
       try {
         const exportData = {
@@ -848,7 +840,6 @@
       }
     }
 
-    // Import data from a JSON file
     function importData(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -863,12 +854,10 @@
         try {
           const importedData = JSON.parse(e.target.result);
           
-          // Validate imported data structure
           if (!importedData.updates || !Array.isArray(importedData.updates)) {
             throw new Error('Invalid data format');
           }
           
-          // Validate each update has required fields
           const validUpdates = importedData.updates.filter(update => {
             return update.date && update.time && update.data && Array.isArray(update.data);
           });
@@ -877,7 +866,6 @@
             throw new Error('No valid updates found in file');
           }
           
-          // Ask user if they want to merge or replace
           const shouldMerge = confirm(
             `📊 Import Data?\n\n` +
             `📁 File contains: ${validUpdates.length} updates\n` +
@@ -887,7 +875,6 @@
           );
           
           if (shouldMerge) {
-            // Merge: Add new updates, avoid duplicates
             let addedCount = 0;
             validUpdates.forEach(newUpdate => {
               const exists = updates.some(existing => 
@@ -909,7 +896,6 @@
               alert('ℹ️ No new updates to add. All data already exists.');
             }
           } else {
-            // Replace: Clear existing and use imported data
             updates = validUpdates;
             saveUpdates();
             updateDateOptions();
@@ -922,7 +908,6 @@
           alert(`❌ Import failed!\n\n${error.message}\n\nPlease check that you're importing a valid Boys II Planet data file.`);
         }
         
-        // Clear file input
         event.target.value = '';
       };
       
@@ -933,10 +918,9 @@
       reader.readAsText(file);
     }
 
-    // Backup reminder function (optional)
     function showBackupReminder() {
       if (updates.length > 0 && localStorage.getItem('lastBackupReminder')) {
-        const daysSinceLastReminder = 7; // Show reminder every 7 days
+        const daysSinceLastReminder = 7;
         const lastReminder = localStorage.getItem('lastBackupReminder');
         
         if (!lastReminder || Date.now() - parseInt(lastReminder) > daysSinceLastReminder * 24 * 60 * 60 * 1000) {
@@ -1353,18 +1337,24 @@
       const mobile = isMobile();
       const settings = {
         borderWidth: mobile ? 4 : 5,
-        pointRadius: mobile ? 7 : 9,
-        pointHoverRadius: mobile ? 9 : 12,
-        pointBorderWidth: mobile ? 3 : 4,
-        fontSize: mobile ? 11 : 13,
+        pointRadius: mobile ? 6 : 8, // Reduced slightly to prevent clipping
+        pointHoverRadius: mobile ? 8 : 10,
+        pointBorderWidth: mobile ? 10 : 12, // Kept large for visibility
+        fontSize: mobile ? 9 : 11,
+        rankFontSize: mobile ? 11 : 13,
         tooltipFontSize: mobile ? 14 : 18,
         tooltipBodySize: mobile ? 12 : 15,
         tickFontSize: mobile ? 11 : 14,
-        paddingTop: mobile ? 40 : 60,
-        paddingSides: mobile ? 20 : 40,
-        paddingBottom: mobile ? 50 : 60, // Increased to accommodate multiline labels
+        paddingTop: mobile ? 60 : 80, // Increased padding to avoid clipping
+        paddingSides: mobile ? 40 : 60, // Increased padding
+        paddingBottom: mobile ? 60 : 80, // Increased padding
         offset: mobile ? 12 : 15
       };
+      
+      console.log('Trainee:', traineeName);
+      console.log('Ranks:', chartData.ranks);
+      console.log('Point Border Colors:', chartData.ranks.map(rank => rank <= 16 ? '#4ade80' : '#ffffff'));
+      console.log('Chart Settings:', settings);
       
       progressChart = new Chart(ctx, {
         type: 'line',
@@ -1379,8 +1369,11 @@
             pointRadius: settings.pointRadius,
             pointHoverRadius: settings.pointHoverRadius,
             pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#ffffff',
+            pointBorderColor: chartData.ranks.map(rank => rank <= 16 ? '#4ade80' : '#ffffff'),
+            pointHoverBorderColor: chartData.ranks.map(rank => rank <= 16 ? '#4ade80' : '#ffffff'),
             pointBorderWidth: settings.pointBorderWidth,
+            pointStyle: 'circle',
+            borderJoinStyle: 'round', // Ensure smooth border rendering
             tension: 0.4,
             fill: true,
             datalabels: {
@@ -1391,7 +1384,7 @@
                   backgroundColor: '#3b82f6',
                   color: '#ffffff',
                   font: {
-                    size: settings.fontSize,
+                    size: settings.rankFontSize,
                     weight: 'bold'
                   },
                   align: 'center',
@@ -1402,10 +1395,6 @@
                 },
                 percentage: {
                   display: true,
-                  backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                  borderColor: '#3b82f6',
-                  borderRadius: mobile ? 6 : 8,
-                  borderWidth: 2,
                   color: '#1f2937',
                   font: {
                     size: settings.fontSize,
@@ -1472,7 +1461,8 @@
               display: false
             },
             datalabels: {
-              display: true
+              display: true,
+              clip: false // Prevent clipping of data labels
             }
           },
           scales: {
@@ -1487,18 +1477,18 @@
                 drawOnChartArea: true,
               },
               ticks: {
-                maxRotation: mobile ? 0 : 0, // Prevent rotation for better readability
+                maxRotation: mobile ? 0 : 0,
                 minRotation: 0,
                 color: '#6b7280',
                 font: {
                   size: settings.tickFontSize,
                   weight: '500'
                 },
-                padding: mobile ? 15 : 20, // Increased padding for multiline labels
-                maxTicksLimit: mobile ? 8 : 12, // Limit ticks to prevent overcrowding
+                padding: mobile ? 15 : 20,
+                maxTicksLimit: mobile ? 8 : 12,
                 autoSkip: true,
                 callback: function(value, index, values) {
-                  return chartData.labels[index].split('\n'); // Enable multiline labels
+                  return chartData.labels[index].split('\n');
                 }
               }
             },
@@ -1532,11 +1522,21 @@
           },
           elements: {
             point: {
-              hoverBorderWidth: mobile ? 4 : 5
+              hoverBorderWidth: settings.pointBorderWidth,
+              borderJoinStyle: 'round' // Ensure smooth border rendering
             }
-          }
+          },
+          clip: false // Disable chart clipping to prevent border cutoff
         }
       });
+      
+      // Force chart update to ensure rendering
+      setTimeout(() => {
+        if (progressChart) {
+          progressChart.update();
+          console.log('Chart updated to ensure border rendering');
+        }
+      }, 0);
     }
 
     function getTraineeProgressData(traineeName) {
@@ -1560,7 +1560,7 @@
         
         const dateObj = new Date(update.date);
         const formattedDate = `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}.${dateObj.getDate().toString().padStart(2, '0')}`;
-        const label = `${formattedDate}\n${update.time}`; // Add line break between date and AM/PM
+        const label = `${formattedDate}\n${update.time}`;
         
         labels.push(label);
         ranks.push(rank);
@@ -1741,14 +1741,19 @@
       let date = document.getElementById('date').value;
       
       if (!rawData.trim() || !date) {
-        alert('⚠️ Please fill in all fields before previewing.');
+        alert('⚠️ Please fill in all fields (date and percentages).');
         return;
       }
       
       let parsedData = parsePercentages(rawData);
       
       if (parsedData.length === 0) {
-        alert('⚠️ Could not parse any valid percentage data. Please check your input format.');
+        alert('⚠️ No valid percentages found. Please check your input.');
+        return;
+      }
+      
+      if (parsedData.length !== traineeNames.length) {
+        alert(`⚠️ Data mismatch: Expected ${traineeNames.length} percentages, but found ${parsedData.length}.`);
         return;
       }
       
@@ -1758,9 +1763,6 @@
 
     document.getElementById('view-date').addEventListener('change', renderLeaderboard);
 
-    document.getElementById('date').valueAsDate = new Date();
-
-    // Initialize and show backup reminder
     updateDateOptions();
     renderLeaderboard();
     showBackupReminder();
